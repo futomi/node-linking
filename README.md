@@ -1554,6 +1554,7 @@ The node-linking was tested with the devices as follows:
   * [Tukeru TH](https://ssl.braveridge.com/store/html/products/detail.php?product_id=34)
   * [Furueru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=36)
   * [Pochiru(eco)](https://ssl.braveridge.com/store/html/products/detail.php?product_id=37)
+  * [Tomoru Full Color](https://ssl.braveridge.com/store/html/products/detail.php?product_id=40)
 
 * [HOUWA SYSTEM DESIGN K.K.](http://www.houwa-js.co.jp/index.php/en/)
   * [BLEAD-TSH-LK](http://blead.buyshop.jp/items/2858899)
