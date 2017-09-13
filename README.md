@@ -1,6 +1,8 @@
 node-linking
 ===============
 
+[[Japanese (日本語)](README_ja.md)]
+
 The node-linking is a Node.js module which allows you to communicate with the BLE devices supporting the Linking Profile developed by Linking Project (NTT DoCoMo) in Japan.
 
 The [Linking Profile](https://linkingiot.com/developer/en/api.html) is a BLE profile mainly used for IoT devices such as LEDs, buttons, a variety of sensors, and so on. Though Linking Project provides documents in English, the [Linking devices](https://linkingiot.com/en/devices.html) are available only in Japan for now.
