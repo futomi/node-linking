@@ -94,6 +94,7 @@ $ npm install node-linking
   * [`onnotify` プロパティ](#LinkingPressure-onnotify-property)
   * [stop() メソッド](#LinkingPressure-stop-method)
 * [対応デバイス](#Supported-devices)
+* [リリースノート](#Release-Note)
 * [リファレンス](#References)
 * [ライセンス](#License)
 
@@ -1565,8 +1566,10 @@ node-linking は次のデバイスで動作することを確認しています�
 Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=39) と [Kizuku](https://ssl.braveridge.com/store/html/products/detail.php?product_id=38) も販売していますが、BLE データが非公開の暗号化方式で暗号化されているため、node-linking はこれらのデバイスをサポートしていません。
 
 ---------------------------------------
-## <a id="Release-note">リリースノート</a>
+## <a id="Release-Note">リリースノート</a>
 
+* v0.0.2 (2017-09-02)
+  * Fixed a bug that an exception was thrown when an unknown packet came.
 * v0.0.1 (2017-07-02)
   * First public release
 

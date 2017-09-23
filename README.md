@@ -96,6 +96,7 @@ $ npm install node-linking
   * [`onnotify` property](#LinkingPressure-onnotify-property)
   * [stop() method](#LinkingPressure-stop-method)
 * [Supported devices](#Supported-devices)
+* [Release Note](#Release-Note)
 * [References](#References)
 * [License](#License)
 
@@ -1564,8 +1565,10 @@ The node-linking was tested with the devices as follows:
 Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=39) and [Kizuku](https://ssl.braveridge.com/store/html/products/detail.php?product_id=38), the node-linking does not support these devices because the BLE data is encrypted using an unpublicized encryption method.
 
 ---------------------------------------
-## <a id="Release-note">Release Note</a>
+## <a id="Release-Note">Release Note</a>
 
+* v0.0.2 (2017-09-02)
+  * Fixed a bug that an exception was thrown when an unknown packet came.
 * v0.0.1 (2017-07-02)
   * First public release
 
