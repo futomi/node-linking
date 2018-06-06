@@ -827,6 +827,33 @@ Disconnected.
 
 今のところ、[`Kizuku`](https://linkingiot.com/developer/en/devices.html) だけがこのサービスをサポートしています。しかし、ビーコンデータが暗号化されているようです。どうやら、我々、サードパーティの開発者には、直接的にこのビーコンデータを扱うことは許されていないようです。
 
+### 照度センサー情報サービス (serviceId: `9`)
+
+```javascript
+  "beaconDataList": [
+    {
+      "name": "Illuminance (lx)",
+      "illuminance": 242,
+      "serviceId": 9
+    },
+  ]
+```
+
+### ベンダー独自情報サービス (serviceId: `15`)
+
+```javascript
+  "beaconDataList": [
+    ...
+    {
+      "name": "Vendor",
+      "bin": "000100001000",
+      "serviceId": 15
+    }
+  ]
+```
+
+12 ビットのデータです。私たちにこの意味は分かりません。
+
 ---------------------------------------
 ## <a id="LinkingServices-object">`LinkingServices` オブジェクト</a>
 
@@ -1568,6 +1595,9 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 ---------------------------------------
 ## <a id="Release-Note">リリースノート</a>
 
+* v0.1.0 (2018-06-06)
+  * Supported new Linking device `Sizuku Lux`.
+  * Supported the Illumination sensor information Service (serviceId: 9) and the Vendor-specific information Service (serviceId: 15) in beacons.
 * v0.0.2 (2017-09-02)
   * Fixed a bug that an exception was thrown when an unknown packet came.
 * v0.0.1 (2017-07-02)
@@ -1586,7 +1616,7 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 
 The MIT License (MIT)
 
-Copyright (c) 2017 Futomi Hatano
+Copyright (c) 2017-2018 Futomi Hatano
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

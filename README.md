@@ -716,7 +716,7 @@ Property            | Type   | Description
   ]
 ```
 
-This service means that the device does not provide any meaningful information in the advertising data.
+In most cases, Though this service is included in a beacon in most cases, it has no meaningful data.
 
 ### Temperature Service (serviceId: `1`)
 
@@ -776,7 +776,7 @@ As far as I know, all Linking devices supporting this service report the same re
 
 ### Pressed button information Service (serviceId: `5`)
 
-```
+```javascript
   "beaconDataList": [
     {
       "name": "Pressed button information",
@@ -828,6 +828,33 @@ For now, there is no device supporting this service.
 ### Vibration sensor information Service (serviceId: `8`)
 
 For now, only [`Kizuku`](https://linkingiot.com/developer/en/devices.html) supports this service. But the beacon data seems to be encrypted. It seems that we, 3rd party developers, are not allowed to handle the beacon data directly.
+
+### Illumination sensor information Service (serviceId: `9`)
+
+```javascript
+  "beaconDataList": [
+    {
+      "name": "Illuminance (lx)",
+      "illuminance": 242,
+      "serviceId": 9
+    },
+  ]
+```
+
+### Vendor-specific information Service (serviceId: `15`)
+
+```javascript
+  "beaconDataList": [
+    ...
+    {
+      "name": "Vendor",
+      "bin": "000100001000",
+      "serviceId": 15
+    }
+  ]
+```
+
+This is vendor-specific 12 bit data. We can not know what it means.
 
 ---------------------------------------
 ## <a id="LinkingServices-object">`LinkingServices` object</a>
@@ -1558,6 +1585,7 @@ The node-linking was tested with the devices as follows:
   * [Furueru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=36)
   * [Pochiru(eco)](https://ssl.braveridge.com/store/html/products/detail.php?product_id=37)
   * [Tomoru Full Color](https://ssl.braveridge.com/store/html/products/detail.php?product_id=40)
+  * [Sizuku Lux](https://ssl.braveridge.com/store/html/products/detail.php?product_id=41)
 
 * [HOUWA SYSTEM DESIGN K.K.](http://www.houwa-js.co.jp/index.php/en/)
   * [BLEAD-TSH-LK](http://blead.buyshop.jp/items/2858899)
@@ -1567,6 +1595,9 @@ Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/htm
 ---------------------------------------
 ## <a id="Release-Note">Release Note</a>
 
+* v0.1.0 (2018-06-06)
+  * Supported new Linking device `Sizuku Lux`.
+  * Supported the Illumination sensor information Service (serviceId: 9) and the Vendor-specific information Service (serviceId: 15) in beacons.
 * v0.0.2 (2017-09-02)
   * Fixed a bug that an exception was thrown when an unknown packet came.
 * v0.0.1 (2017-07-02)
@@ -1585,7 +1616,7 @@ Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/htm
 
 The MIT License (MIT)
 
-Copyright (c) 2017 Futomi Hatano
+Copyright (c) 2017-2018 Futomi Hatano
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
