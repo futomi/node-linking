@@ -1586,6 +1586,7 @@ node-linking は次のデバイスで動作することを確認しています�
   * [Furueru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=36)
   * [Pochiru(eco)](https://ssl.braveridge.com/store/html/products/detail.php?product_id=37)
   * [Tomoru フルカラー](https://ssl.braveridge.com/store/html/products/detail.php?product_id=40)
+  * [Sizuku Lux](https://ssl.braveridge.com/store/html/products/detail.php?product_id=41)
 
 * [株式会社芳和システムデザイン](http://www.houwa-js.co.jp/index.php/ja/)
   * [BLEAD-TSH-LK](http://blead.buyshop.jp/items/2858899)
