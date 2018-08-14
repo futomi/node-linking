@@ -936,7 +936,7 @@ device.services.battery.onnotify = (res) => {
   console.log(JSON.stringify(res, null, '  '));
 };
 
-device.services.battery.start().then(() => {
+device.services.battery.start().then((res) => {
   if(res.resultCode === 0) {
     console.log('Started to watch the changes of the battery status.');
   } else {
@@ -1184,7 +1184,7 @@ device.services.gyroscope.onnotify = (res) => {
   console.log('x: ' + res.x + ', y: ' + res.y + ', z: ' + res.z);
 };
 
-device.services.gyroscope.start().then(() => {
+device.services.gyroscope.start().then((res) => {
   if(res.resultCode === 0) {
     console.log('Started to watch the data from the gyroscope.');
   } else {
@@ -1251,7 +1251,7 @@ device.services.accelerometer.onnotify = (res) => {
   console.log('x: ' + res.x + ', y: ' + res.y + ', z: ' + res.z);
 };
 
-device.services.accelerometer.start().then(() => {
+device.services.accelerometer.start().then((res) => {
   if(res.resultCode === 0) {
     console.log('Started to watch the data from the accelerometer.');
   } else {
@@ -1318,7 +1318,7 @@ device.services.orientation.onnotify = (res) => {
   console.log('x: ' + res.x + ', y: ' + res.y + ', z: ' + res.z);
 };
 
-device.services.orientation.start().then(() => {
+device.services.orientation.start().then((res) => {
   if(res.resultCode === 0) {
     console.log('Started to watch the data from the orientation sensor.');
   } else {
@@ -1383,7 +1383,7 @@ device.services.temperature.onnotify = (res) => {
   console.log(res.temperature + ' °C');
 };
 
-device.services.temperature.start().then(() => {
+device.services.temperature.start().then((res) => {
   if(res.resultCode === 0) {
     console.log('Started to watch the data from the temperature sensor.');
   } else {
@@ -1442,7 +1442,7 @@ device.services.humidity.onnotify = (res) => {
   console.log(res.humidity + ' %');
 };
 
-device.services.humidity.start().then(() => {
+device.services.humidity.start().then((res) => {
   if(res.resultCode === 0) {
     console.log('Started to watch the data from the humidity sensor.');
   } else {
@@ -1503,7 +1503,7 @@ device.services.pressure.onnotify = (res) => {
   console.log(res.pressure + ' hPa');
 };
 
-device.services.pressure.start().then(() => {
+device.services.pressure.start().then((res) => {
   if(res.resultCode === 0) {
     console.log('Started to watch the data from the air pressure sensor.');
   } else {
