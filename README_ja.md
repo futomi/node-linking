@@ -93,6 +93,10 @@ $ npm install node-linking
   * [start() メソッド](#LinkingPressure-start-method)
   * [`onnotify` プロパティ](#LinkingPressure-onnotify-property)
   * [stop() メソッド](#LinkingPressure-stop-method)
+* [`LinkingIlluminance` オブジェクト](#LinkingIlluminance-object)
+  * [start() メソッド](#LinkingIlluminance-start-method)
+  * [`onnotify` プロパティ](#LinkingIlluminance-onnotify-property)
+  * [stop() メソッド](#LinkingIlluminance-stop-method)
 * [対応デバイス](#Supported-devices)
 * [リリースノート](#Release-Note)
 * [リファレンス](#References)
@@ -872,6 +876,7 @@ Disconnected.
 `temperature`   | [`LinkingTemperature`](#LinkingTemperature-object)     | このオブジェクトは温度センサーサービスを表し、該当のセンサーデータをモニターすることができます。デバイスがこのサービスをサポートしてない場合、この値は `null` になります。
 `humidity`      | [`LinkingHumidity`](#LinkingHumidity-object)           | このオブジェクトは湿度センサーサービスを表し、該当のセンサーデータをモニターすることができます。デバイスがこのサービスをサポートしてない場合、この値は `null` になります。
 `pressure`      | [`LinkingPressure`](#LinkingPressure-object)           | このオブジェクトは大気圧センサーサービスを表し、該当のセンサーデータをモニターすることができます。デバイスがこのサービスをサポートしてない場合、この値は `null` になります。
+`illuminance`      | [`LinkingIlluminance`](#LinkingIlluminance-object)           | このオブジェクトは照度センサーサービスを表し、該当のセンサーデータをモニターすることができます。デバイスがこのサービスをサポートしてない場合、この値は `null` になります。
 
 それぞれのプロパティが `null` かそうでないかをチェックすれば、該当のデバイスがどのサービスをサポートしているのかを知ることができます。以下のコードは、該当のデバイスが温度センサーサービスをサポートしているかをチェックします。
 
@@ -1523,7 +1528,7 @@ device.services.pressure.start().then((res) => {
 上記コードは、次のような結果を出力します：
 
 ```JavaScript
-49.875 %
+1008 hPa
 ```
 
 上記コードを見て分かる通り、次のプロパティを含んだオブジェクトが `resolve()` 関数に引き渡されます：
@@ -1543,6 +1548,67 @@ device.services.pressure.start().then((res) => {
 
 ```JavaScript
 device.services.pressure.stop().then(() => {
+  console.log('Stopped');
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+---------------------------------------
+## <a id="LinkingIlluminance-object">`LinkingIlluminance` オブジェクト</a>
+
+このオブジェクトは、デバイスの照度センサーによって報告されるデータを監視する API を提供します。
+
+### <a id="LinkingIlluminance-start-method">`start()` メソッド</a>
+
+このメソッドは、デバイスの照度センサーによって報告されるデータの監視を開始します。
+
+
+```JavaScript
+device.services.illuminance.onnotify = (res) => {
+  console.log(res.illuminance + ' lux');
+};
+
+device.services.illuminance.start().then((res) => {
+  if(res.resultCode === 0) {
+    console.log('Started to watch the data from the air illuminance sensor.');
+  } else {
+    console.error(res.resultCode + ': ' + res.resultText);
+  }
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+`start()` メソッドを呼び出す前に、[`onnotify`](#LinkingIlluminance-onnotify-property) プロパティにコールバック関数をセットしなければいけません。
+
+このメソッドは `Promise` オブジェクトを返します。デバイスからレスポンスが来たら、`resolve()` 関数が呼び出され、[`LinkingResponse`](#LinkingResponse-object) が引き渡されます。
+
+たとえ、`resolve()` 関数が呼び出されたとしても、必ずしもリクエストが成功したとは限らない点に注意してください。[`LinkingResponse`](#LinkingResponse-object) オブジェクトの `resultCode` の値をチェックすることをお勧めします。
+
+上記コードは、次のような結果を出力します：
+
+```JavaScript
+109.23485 lux
+```
+
+上記コードを見て分かる通り、次のプロパティを含んだオブジェクトが `resolve()` 関数に引き渡されます：
+
+プロパティ | 型  | 説明
+:-------------|:-------|:------------
+`illuminance` | Number | 照度 (lux)
+
+### <a id="LinkingIlluminance-onnotify-property">`onnotify` プロパティ</a>
+
+`start()` メソッドを呼び出した後、デバイスから通知が来るたびに、`onnotify` プロパティにセットされたコールバック関数が呼び出されます。
+
+### <a id="LinkingIlluminance-stop-method">`stop()` method</a>
+
+このメソッドは、デバイスの照度センサーによって報告されるデータの監視を停止します。
+
+
+```JavaScript
+device.services.illuminance.stop().then(() => {
   console.log('Stopped');
 }).catch((error) => {
   console.error(error);
@@ -1596,6 +1662,8 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 ---------------------------------------
 ## <a id="Release-Note">リリースノート</a>
 
+* v0.2.0 (2018-09-16)
+  * Supported illuminance service to monitor the sensor data.
 * v0.1.0 (2018-06-06)
   * Supported new Linking device `Sizuku Lux`.
   * Supported the Illumination sensor information Service (serviceId: 9) and the Vendor-specific information Service (serviceId: 15) in beacons.

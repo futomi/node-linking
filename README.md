@@ -95,6 +95,10 @@ $ npm install node-linking
   * [start() method](#LinkingPressure-start-method)
   * [`onnotify` property](#LinkingPressure-onnotify-property)
   * [stop() method](#LinkingPressure-stop-method)
+* [`LinkingIlluminance` object](#LinkingIlluminance-object)
+  * [start() method](#LinkingIlluminance-start-method)
+  * [`onnotify` property](#LinkingIlluminance-onnotify-property)
+  * [stop() method](#LinkingIlluminance-stop-method)
 * [Supported devices](#Supported-devices)
 * [Release Note](#Release-Note)
 * [References](#References)
@@ -874,6 +878,7 @@ Property        | Type                                                   | Descr
 `temperature`   | [`LinkingTemperature`](#LinkingTemperature-object)     | This object represents a temperature service which enables you to monitor the sensor data. If the device does not support this service, this value is `null`.
 `humidity`      | [`LinkingHumidity`](#LinkingHumidity-object)           | This object represents a humidity service which enables you to monitor the sensor data. If the device does not support this service, this value is `null`.
 `pressure`      | [`LinkingPressure`](#LinkingPressure-object)           | This object represents a air pressure service which enables you to monitor the sensor data. If the device does not support this service, this value is `null`.
+`illuminance`      | [`LinkingIlluminance`](#LinkingIlluminance-object)           | This object represents a illuminance service which enables you to monitor the sensor data. If the device does not support this service, this value is `null`.
 
 You can know which services are supported by the device checking if each property is `null` or not. The code snippet below checks if the temperature service is supported by the device.
 
@@ -1523,7 +1528,7 @@ Note that the request is not necessarily accepted even if the `resolve()` method
 The code snippet above will output the result like this:
 
 ```JavaScript
-49.875 %
+1008 hPa
 ```
 
 As you can see in the code snippet above, an object is passed to the `resolve()` function, which contains the properties as follows:
@@ -1542,6 +1547,65 @@ This method stops to watch the data reported by the air pressure sensor in the d
 
 ```JavaScript
 device.services.pressure.stop().then(() => {
+  console.log('Stopped');
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+---------------------------------------
+## <a id="LinkingIlluminance-object">`LinkingIlluminance` object</a>
+
+This object exposes APIs which enable you to watch the data reported by the illuminance sensor in the device.
+
+### <a id="LinkingIlluminance-start-method">`start()` method</a>
+
+This method starts to watch the data reported by the illuminance sensor in the device.
+
+```JavaScript
+device.services.illuminance.onnotify = (res) => {
+  console.log(res.illuminance + ' lux');
+};
+
+device.services.illuminance.start().then((res) => {
+  if(res.resultCode === 0) {
+    console.log('Started to watch the data from the illuminance sensor.');
+  } else {
+    console.error(res.resultCode + ': ' + res.resultText);
+  }
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+Before call the `start()` method, a callback function must be set to the [`onnotify`](#LinkingIlluminance-onnotify-property) property.
+
+This method returns a `Promise` object. If a response comes from the device, the `resolve()` function will be called with the [`LinkingResponse`](#LinkingResponse-object) object.
+
+Note that the request is not necessarily accepted even if the `resolve()` method is called. It is recommended to check the value of the `resultCode` property in the [`LinkingResponse`](#LinkingResponse-object) object.
+
+The code snippet above will output the result like this:
+
+```JavaScript
+109.23485 lux
+```
+
+As you can see in the code snippet above, an object is passed to the `resolve()` function, which contains the properties as follows:
+
+Property      | Type   | Description
+:-------------|:-------|:------------
+`illuminance` | Number | illuminance (lux)
+
+### <a id="LinkingIlluminance-onnotify-property">`onnotify` property</a>
+
+After the `start()` method is called, the callback function set to the `onnotify` property will be called whenever a notification comes from the devices.
+
+### <a id="LinkingIlluminance-stop-method">`stop()` method</a>
+
+This method stops to watch the data reported by the illuminance sensor in the device.
+
+```JavaScript
+device.services.illuminance.stop().then(() => {
   console.log('Stopped');
 }).catch((error) => {
   console.error(error);
@@ -1595,6 +1659,8 @@ Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/htm
 ---------------------------------------
 ## <a id="Release-Note">Release Note</a>
 
+* v0.2.0 (2018-09-16)
+  * Supported illuminance service to monitor the sensor data.
 * v0.1.0 (2018-06-06)
   * Supported new Linking device `Sizuku Lux`.
   * Supported the Illumination sensor information Service (serviceId: 9) and the Vendor-specific information Service (serviceId: 15) in beacons.
