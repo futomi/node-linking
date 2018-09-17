@@ -1662,6 +1662,8 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 ---------------------------------------
 ## <a id="Release-Note">リリースノート</a>
 
+* v0.2.0 (2018-09-16)
+  * Supported illuminance service to monitor the sensor data.
 * v0.1.0 (2018-06-06)
   * Supported new Linking device `Sizuku Lux`.
   * Supported the Illumination sensor information Service (serviceId: 9) and the Vendor-specific information Service (serviceId: 15) in beacons.
