@@ -1,6 +1,6 @@
 {
   "name": "node-linking",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The node-linking is a Node.js module which allows you to communicate with the BLE devices supporting the Linking Profile developed by Linking Project (NTT DoCoMo) in Japan.",
   "main": "./lib/linking.js",
   "files": [
@@ -30,6 +30,6 @@
   },
   "readmeFilename": "README.md",
   "dependencies": {
-    "noble": ">=1.8.0"
+    "@abandonware/noble": ">=1.9.2-5"
   }
 }

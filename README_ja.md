@@ -14,17 +14,19 @@ node-linking は、Raspbian や Ubuntu など Linux ベースの OS で動作し
 ## 依存関係
 
 * [Node.js](https://nodejs.org/en/) 6 +
-* [noble](https://github.com/sandeepmistry/noble)
+* [@abandonware/noble](https://github.com/abandonware/noble)
 
-[noble](https://github.com/sandeepmistry/noble) のインストール方法については、[noble](https://github.com/sandeepmistry/noble) のドキュメントを参照してください。
+[@abandonware/noble](https://github.com/abandonware/noble) のインストール方法については、[@abandonware/noble](https://github.com/abandonware/noble) のドキュメントを参照してください。
 
-noble はほとんどの Linux 環境では root 権限でないと動作しません。Raspbian のデフォルトユーザー `pi` は Raspbian で noble を動作させることができますが、一般的に、一般ユーザーでは noble を使って BLE にアクセスできません。詳細は [noble](https://github.com/sandeepmistry/noble) のドキュメントを参照してください。
+noble はほとんどの Linux 環境では root 権限でないと動作しません。詳細は [@abandonware/noble](https://github.com/abandonware/noble) のドキュメントを参照してください。
+
+このモジュールの以前のバージョンでは BLE 操作のために [noble](https://github.com/sandeepmistry/noble) に依存していました。しかし [noble](https://github.com/sandeepmistry/noble) は Node v10 以降をサポートしていないようです。現在、このモジュールは、[noble](https://github.com/sandeepmistry/noble) からフォークされた [@abandonware/noble](https://github.com/abandonware/noble) を採用しています。下位互換性のために、このモジュールは、Node v8 以前の環境では [noble](https://github.com/sandeepmistry/noble) がインストールされた環境でも、これまで通り動作します。
 
 ## インストール
 
 ```
 $ cd ~
-$ npm install noble
+$ npm install @abandonware/noble
 $ npm install node-linking
 ```
 
@@ -1662,6 +1664,9 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 ---------------------------------------
 ## <a id="Release-Note">リリースノート</a>
 
+* v0.3.0 (2019-10-24)
+  * [@abandonware/noble](https://github.com/abandonware/noble) を採用することで、Node v8 以降をサポートしました。
+  * [`Buffer`](https://nodejs.org/api/buffer.html) に関連した廃止予定のコードを更新しました。これによって、このモジュールによって Node v10 以降で警告が出力されることがなくなりました。
 * v0.2.0 (2018-09-16)
   * Supported illuminance service to monitor the sensor data.
 * v0.1.0 (2018-06-06)
@@ -1685,7 +1690,7 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 
 The MIT License (MIT)
 
-Copyright (c) 2017-2018 Futomi Hatano
+Copyright (c) 2017-2019 Futomi Hatano
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
