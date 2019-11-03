@@ -75,14 +75,17 @@ $ npm install node-linking
   * [start() メソッド](#LinkingGyroscope-start-method)
   * [`onnotify` プロパティ](#LinkingGyroscope-onnotify-property)
   * [stop() メソッド](#LinkingGyroscope-stop-method)
+  * [get() メソッド](#LinkingGyroscope-get-method)
 * [`LinkingAccelerometer` オブジェクト](#LinkingAccelerometer-object)
   * [start() メソッド](#LinkingAccelerometer-start-method)
   * [`onnotify` プロパティ](#LinkingAccelerometer-onnotify-property)
   * [stop() メソッド](#LinkingAccelerometer-stop-method)
+  * [get() メソッド](#LinkingAccelerometer-get-method)
 * [`LinkingOrientation` オブジェクト](#LinkingOrientation-object)
   * [start() メソッド](#LinkingOrientation-start-method)
   * [`onnotify` プロパティ](#LinkingOrientation-onnotify-property)
   * [stop() メソッド](#LinkingOrientation-stop-method)
+  * [get() メソッド](#LinkingOrientation-get-method)
 * [`LinkingTemperature` オブジェクト](#LinkingTemperature-object)
   * [start() メソッド](#LinkingTemperature-start-method)
   * [`onnotify` プロパティ](#LinkingTemperature-onnotify-property)
@@ -669,7 +672,7 @@ Disconnected.
 
 `LinkingAdvertisement` オブジェクトは、Linking デバイスから来たアドバタイジングデータを表します。このオブジェクトは、次のプロパティを含んだ単なるハッシュオブジェクトです：
 
-```JavaScript
+```json
 {
   "id": "edcbe4062d81",
   "uuid": "edcbe4062d81",
@@ -711,7 +714,7 @@ Disconnected.
 
 ### 一般サービス (serviceId: `0`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "General",
@@ -724,7 +727,7 @@ Disconnected.
 
 ### 温度サービス (serviceId: `1`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "Temperature (°C)",
@@ -736,7 +739,7 @@ Disconnected.
 
 ### 湿度サービス (serviceId: `2`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "Humidity (%)",
@@ -748,7 +751,7 @@ Disconnected.
 
 ### 大気圧サービス (serviceId: `3`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "Air pressure (hPa)",
@@ -760,7 +763,7 @@ Disconnected.
 
 ### 電池残量サービス (serviceId: `4`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "Remaining battery power (Threshold value or less)",
@@ -780,7 +783,7 @@ Disconnected.
 
 ### ボタン押下情報サービス (serviceId: `5`)
 
-```
+```json
   "beaconDataList": [
     {
       "name": "Pressed button information",
@@ -800,26 +803,28 @@ Disconnected.
 
 `buttonId` | `buttonName`
 :---------|:----------------------------
-`1`       | `Power`
-`2`       | `SingleClick`
-`3`       | `Home`
-`4`       | `DoubleClick`
-`5`       | `VolumeUp`
-`6`       | `VolumeDown`
-`7`       | `LongClick`
-`8`       | `Pause`
-`9`       | `Power`
-`10`      | `FastForward`
-`11`      | `ReWind`
-`12`      | `Shutter`
-`13`      | `Up`
-`14`      | `Down`
-`15`      | `Left`
-`16`      | `Right`
-`17`      | `Enter`
-`18`      | `Menu`
-`19`      | `Play`
-`20`      | `Stop`
+`0` | `Power`
+`1` | `Return`
+`2` | `SingleClick`
+`3` | `Home`
+`4` | `DoubleClick`
+`5` | `VolumeUp`
+`6` | `VolumeDown`
+`7` | `LongPress`
+`8` | `Pause`
+`9` | `LongPressRelease`
+`10` | `FastForward`
+`11` | `ReWind`
+`12` | `Shutter`
+`13` | `Up`
+`14` | `Down`
+`15` | `Left`
+`16` | `Right`
+`17` | `Enter`
+`18` | `Menu`
+`19` | `Play`
+`20` | `Stop`
+
 
 ### 開閉センサー情報サービス (serviceId: `6`)
 
@@ -827,7 +832,21 @@ Disconnected.
 
 ### 人感センサー情報サービス (serviceId: `7`)
 
-今のところ、このサービスをサポートしたデバイスはありません。
+```json
+  "beaconDataList": [
+    {
+      "name": "Human detection",
+      "humanDetectionResponse": true,
+      "humanDetectionCount": 199,
+      "serviceId": 7
+    }
+  ]
+```
+
+プロパティ                | 型      | 説明
+:------------------------|:--------|:-----------
+`humanDetectionResponse` | Boolean | 感知フラグ (`true`: 反応あり, `false`: 反応なし)
+`humanDetectionCount`    | Number  | 反応ありの回数
 
 ### 振動センサー情報サービス (serviceId: `8`)
 
@@ -835,21 +854,20 @@ Disconnected.
 
 ### 照度センサー情報サービス (serviceId: `9`)
 
-```javascript
+```json
   "beaconDataList": [
     {
       "name": "Illuminance (lx)",
       "illuminance": 242,
       "serviceId": 9
-    },
+    }
   ]
 ```
 
 ### ベンダー独自情報サービス (serviceId: `15`)
 
-```javascript
+```json
   "beaconDataList": [
-    ...
     {
       "name": "Vendor",
       "bin": "000100001000",
@@ -1243,6 +1261,34 @@ device.services.gyroscope.stop().then(() => {
 });
 ```
 
+### <a id="LinkingGyroscope-get-method">`get()` メソッド</a>
+
+このメソッドは、デバイスのジャイロスコープによって報告された最新のデータを取得します。
+
+```javascript
+device.services.gyroscope.get().then((res) => {
+  console.log(JSON.stringify(res, null, '  '));
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+このメソッドの実行が成功したら、`resolve()` 関数に次のプロパティを含むオブジェクトが引き渡されます。
+
+プロパティ | 型     | 説明
+:---------|:-------|:------------
+`x`       | Float  | X 軸の回転速度
+`y`       | Float  | Y 軸の回転速度
+`z`       | Float  | Z 軸の回転速度
+
+```json
+{
+  "x": 159.16159057617188,
+  "y": -32.82012176513672,
+  "z": -5.487804889678955
+}
+```
+
 ---------------------------------------
 ## <a id="LinkingAccelerometer-object">`LinkingAccelerometer` オブジェクト</a>
 
@@ -1310,6 +1356,35 @@ device.services.accelerometer.stop().then(() => {
 });
 ```
 
+### <a id="LinkingAccelerometer-get-method">`get()` メソッド</a>
+
+このメソッドは、デバイスの加速度センサーによって報告された最新のデータを取得します。
+
+
+```javascript
+device.services.accelerometer.get().then((res) => {
+  console.log(JSON.stringify(res, null, '  '));
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+このメソッドの実行が成功したら、`resolve()` 関数に次のプロパティを含むオブジェクトが引き渡されます。
+
+プロパティ | 型     | 説明
+:---------|:-------|:------------
+`x`       | Float  | X 軸の加速度
+`y`       | Float  | Y 軸の加速度
+`z`       | Float  | Z 軸の加速度
+
+```json
+{
+  "x": -0.03200000151991844,
+  "y": 0.004000000189989805,
+  "z": 1.024999976158142
+}
+```
+
 ---------------------------------------
 ## <a id="LinkingOrientation-object">`LinkingOrientation` オブジェクト</a>
 
@@ -1373,6 +1448,34 @@ device.services.orientation.stop()).then(() => {
 }).catch((error) => {
   console.error(error);
 });
+```
+
+### <a id="LinkingOrientation-get-method">`get()` メソッド</a>
+
+このメソッドは、デバイスの方位センサーによって報告された最新のデータを取得します。
+
+```javascript
+device.services.orientation.get().then((res) => {
+  console.log(JSON.stringify(res, null, '  '));
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+このメソッドの実行が成功したら、`resolve()` 関数に次のプロパティを含むオブジェクトが引き渡されます。
+
+プロパティ | 型     | 説明
+:---------|:-------|:------------
+`x`       | Float  | X 軸の回転角度
+`y`       | Float  | Y 軸の回転角度
+`z`       | Float  | Z 軸の回転角度
+
+```json
+{
+  "x": 2.049999952316284,
+  "y": -0.7599999904632568,
+  "z": 0.550000011920929
+}
 ```
 
 ---------------------------------------
@@ -1655,6 +1758,7 @@ node-linking は次のデバイスで動作することを確認しています�
   * [Pochiru(eco)](https://ssl.braveridge.com/store/html/products/detail.php?product_id=37)
   * [Tomoru フルカラー](https://ssl.braveridge.com/store/html/products/detail.php?product_id=40)
   * [Sizuku Lux](https://ssl.braveridge.com/store/html/products/detail.php?product_id=41)
+  * [Oruto](https://ssl.braveridge.com/store/html/products/detail.php?product_id=44)
 
 * [株式会社芳和システムデザイン](http://www.houwa-js.co.jp/index.php/ja/)
   * [BLEAD-TSH-LK](http://blead.buyshop.jp/items/2858899)
@@ -1664,6 +1768,11 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 ---------------------------------------
 ## <a id="Release-Note">リリースノート</a>
 
+* v0.4.0 (2019-11-03)
+  * 新製品の [Oruto](https://ssl.braveridge.com/store/html/products/detail.php?product_id=44) をサポートしました (アドバタイジングパケットのスキャンのみ)。
+  * [`LinkingGyroscope`](#LinkingGyroscope-object), [`LinkingAccelerometer`](#linkingaccelerometer-object), そして [`LinkingOrientation`](#linkingorientation-object) オブジェクトに `get()` メソッドを追加しました。
+  * [`connect()`](#LinkingDevice-connect-method) メソッドの処理にタイムアウト機構を追加しました。
+  * [ボタン押下情報サービス (serviceId: `5`) の `buttonId` と `buttonName` の対応](#pressed-button-information-service-serviceid-5)を更新しました。いくつかの ID が追加され、いくつかの名前が変更されました (`LongClick` -> `LongPress`, `LongClickRelease` -> `LongPressRelease`)。
 * v0.3.0 (2019-10-24)
   * [@abandonware/noble](https://github.com/abandonware/noble) を採用することで、Node v8 以降をサポートしました。
   * [`Buffer`](https://nodejs.org/api/buffer.html) に関連した廃止予定のコードを更新しました。これによって、このモジュールによって Node v10 以降で警告が出力されることがなくなりました。

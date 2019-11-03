@@ -77,14 +77,17 @@ $ npm install node-linking
   * [start() method](#LinkingGyroscope-start-method)
   * [`onnotify` property](#LinkingGyroscope-onnotify-property)
   * [stop() method](#LinkingGyroscope-stop-method)
+  * [get() method](#LinkingGyroscope-get-method)
 * [`LinkingAccelerometer` object](#LinkingAccelerometer-object)
   * [start() method](#LinkingAccelerometer-start-method)
   * [`onnotify` property](#LinkingAccelerometer-onnotify-property)
   * [stop() method](#LinkingAccelerometer-stop-method)
+  * [get() method](#LinkingAccelerometer-get-method)
 * [`LinkingOrientation` object](#LinkingOrientation-object)
   * [start() method](#LinkingOrientation-start-method)
   * [`onnotify` property](#LinkingOrientation-onnotify-property)
   * [stop() method](#LinkingOrientation-stop-method)
+  * [get() method](#LinkingOrientation-get-method)
 * [`LinkingTemperature` object](#LinkingTemperature-object)
   * [start() method](#LinkingTemperature-start-method)
   * [`onnotify` property](#LinkingTemperature-onnotify-property)
@@ -671,7 +674,7 @@ An object will be passed to the callback function set to the `ondisconnect`, whi
 
 The `LinkingAdvertisement` object represents an advertising data coming from the Linking device. This object is just a hash object containing properties as follows:
 
-```JavaScript
+```json
 {
   "id": "edcbe4062d81",
   "uuid": "edcbe4062d81",
@@ -713,7 +716,7 @@ Property            | Type   | Description
 
 ### General Service (serviceId: `0`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "General",
@@ -726,7 +729,7 @@ In most cases, Though this service is included in a beacon in most cases, it has
 
 ### Temperature Service (serviceId: `1`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "Temperature (°C)",
@@ -738,7 +741,7 @@ In most cases, Though this service is included in a beacon in most cases, it has
 
 ### Humidity Service (serviceId: `2`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "Humidity (%)",
@@ -750,7 +753,7 @@ In most cases, Though this service is included in a beacon in most cases, it has
 
 ### Air pressure Service (serviceId: `3`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "Air pressure (hPa)",
@@ -762,7 +765,7 @@ In most cases, Though this service is included in a beacon in most cases, it has
 
 ### Remaining battery power (Threshold value or less) Service (serviceId: `4`)
 
-```JavaScript
+```json
   "beaconDataList": [
     {
       "name": "Remaining battery power (Threshold value or less)",
@@ -782,7 +785,7 @@ As far as I know, all Linking devices supporting this service report the same re
 
 ### Pressed button information Service (serviceId: `5`)
 
-```javascript
+```json
   "beaconDataList": [
     {
       "name": "Pressed button information",
@@ -802,26 +805,27 @@ The possible combinations of `buttonId` and `buttonName` are described below:
 
 `buttonId` | `buttonName`
 :---------|:----------------------------
-`1`       | `Power`
-`2`       | `SingleClick`
-`3`       | `Home`
-`4`       | `DoubleClick`
-`5`       | `VolumeUp`
-`6`       | `VolumeDown`
-`7`       | `LongClick`
-`8`       | `Pause`
-`9`       | `Power`
-`10`      | `FastForward`
-`11`      | `ReWind`
-`12`      | `Shutter`
-`13`      | `Up`
-`14`      | `Down`
-`15`      | `Left`
-`16`      | `Right`
-`17`      | `Enter`
-`18`      | `Menu`
-`19`      | `Play`
-`20`      | `Stop`
+`0` | `Power`
+`1` | `Return`
+`2` | `SingleClick`
+`3` | `Home`
+`4` | `DoubleClick`
+`5` | `VolumeUp`
+`6` | `VolumeDown`
+`7` | `LongPress`
+`8` | `Pause`
+`9` | `LongPressRelease`
+`10` | `FastForward`
+`11` | `ReWind`
+`12` | `Shutter`
+`13` | `Up`
+`14` | `Down`
+`15` | `Left`
+`16` | `Right`
+`17` | `Enter`
+`18` | `Menu`
+`19` | `Play`
+`20` | `Stop`
 
 ### Opening/closing sensor information Service (serviceId: `6`)
 
@@ -829,7 +833,21 @@ For now, only [`Oshieru`](https://linkingiot.com/developer/en/devices.html) supp
 
 ### Human detection (Motion) sensor information Service (serviceId: `7`)
 
-For now, there is no device supporting this service.
+```json
+  "beaconDataList": [
+    {
+      "name": "Human detection",
+      "humanDetectionResponse": true,
+      "humanDetectionCount": 199,
+      "serviceId": 7
+    }
+  ]
+```
+
+Properties               | Type    | Description
+:------------------------|:--------|:-----------
+`humanDetectionResponse` | Boolean | Detection flag (`true`: With response, `false`: Without response)
+`humanDetectionCount`    | Number  | Number of With response
 
 ### Vibration sensor information Service (serviceId: `8`)
 
@@ -837,21 +855,20 @@ For now, only [`Kizuku`](https://linkingiot.com/developer/en/devices.html) suppo
 
 ### Illumination sensor information Service (serviceId: `9`)
 
-```javascript
+```json
   "beaconDataList": [
     {
       "name": "Illuminance (lx)",
       "illuminance": 242,
       "serviceId": 9
-    },
+    }
   ]
 ```
 
 ### Vendor-specific information Service (serviceId: `15`)
 
-```javascript
+```json
   "beaconDataList": [
-    ...
     {
       "name": "Vendor",
       "bin": "000100001000",
@@ -1220,9 +1237,9 @@ As you can see in the code snippet above, an object is passed to the `resolve()`
 
 Property | Type   | Description
 :--------|:-------|:------------
-`x`      | Number | X-axis rotational
-`y`      | Number | Y-axis rotational
-`z`      | Number | Z-axis rotational
+`x`      | Float  | X-axis rotational
+`y`      | Float  | Y-axis rotational
+`z`      | Float  | Z-axis rotational
 
 The Linking Profile specification does not define the unit of each value. As far as I tried with some devices, it seems to be `deg/sec`.
 
@@ -1242,6 +1259,34 @@ device.services.gyroscope.stop().then(() => {
 }).catch((error) => {
   console.error(error);
 });
+```
+
+### <a id="LinkingGyroscope-get-method">`get()` method</a>
+
+This method retrieves the latest data reported by the gyroscope in the device.
+
+```javascript
+device.services.gyroscope.get().then((res) => {
+  console.log(JSON.stringify(res, null, '  '));
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+If this method successfully executed, an object will be passed to the `resolve()` function, which contains the properties as follows:
+
+Property | Type   | Description
+:--------|:-------|:------------
+`x`      | Float  | X-axis rotational
+`y`      | Float  | Y-axis rotational
+`z`      | Float  | Z-axis rotational
+
+```json
+{
+  "x": 159.16159057617188,
+  "y": -32.82012176513672,
+  "z": -5.487804889678955
+}
 ```
 
 ---------------------------------------
@@ -1287,9 +1332,9 @@ As you can see in the code snippet above, an object is passed to the `resolve()`
 
 Property | Type   | Description
 :--------|:-------|:------------
-`x`      | Number | X-axis acceleration
-`y`      | Number | Y-axis acceleration
-`z`      | Number | Z-axis acceleration
+`x`      | Float  | X-axis acceleration
+`y`      | Float  | Y-axis acceleration
+`z`      | Float  | Z-axis acceleration
 
 The Linking Profile specification does not define the unit of each value. As far as I tried with some devices, it seems to be `G` including gravity because the value of the `z` property is just `1.0` when the device remains quiescent.
 
@@ -1309,6 +1354,34 @@ device.services.accelerometer.stop().then(() => {
 }).catch((error) => {
   console.error(error);
 });
+```
+
+### <a id="LinkingAccelerometer-get-method">`get()` method</a>
+
+This method retrieves the latest data reported by the accelerometer in the device.
+
+```javascript
+device.services.accelerometer.get().then((res) => {
+  console.log(JSON.stringify(res, null, '  '));
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+If this method successfully executed, an object will be passed to the `resolve()` function, which contains the properties as follows:
+
+Property | Type   | Description
+:--------|:-------|:------------
+`x`      | Float  | X-axis acceleration
+`y`      | Float  | Y-axis acceleration
+`z`      | Float  | Z-axis acceleration
+
+```json
+{
+  "x": -0.03200000151991844,
+  "y": 0.004000000189989805,
+  "z": 1.024999976158142
+}
 ```
 
 ---------------------------------------
@@ -1354,9 +1427,9 @@ As you can see in the code snippet above, an object is passed to the `resolve()`
 
 Property | Type   | Description
 :--------|:-------|:------------
-`x`      | Number | X-axis rotational angle
-`y`      | Number | Y-axis rotational angle
-`z`      | Number | Z-axis rotational angle
+`x`      | Float  | X-axis rotational angle
+`y`      | Float  | Y-axis rotational angle
+`z`      | Float  | Z-axis rotational angle
 
 The Linking Profile specification does not define the unit of each value. The orientation sensor (magnetometer) in the "Board for apps developers" is [STMicroelectronics LIS3MDL](http://www.st.com/en/mems-and-sensors/lis3mdl.html). According to [the data sheet](http://www.st.com/resource/en/datasheet/lis3mdl.pdf), the unit is `gauss`. But I'm not sure the unit of the value coming from the device through the Linking Profile.
 
@@ -1374,6 +1447,34 @@ device.services.orientation.stop()).then(() => {
 }).catch((error) => {
   console.error(error);
 });
+```
+
+### <a id="LinkingOrientation-get-method">`get()` method</a>
+
+This method retrieves the latest data reported by the orientation in the device.
+
+```javascript
+device.services.orientation.get().then((res) => {
+  console.log(JSON.stringify(res, null, '  '));
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+If this method successfully executed, an object will be passed to the `resolve()` function, which contains the properties as follows:
+
+Property | Type   | Description
+:--------|:-------|:------------
+`x`      | Float  | X-axis rotational angle
+`y`      | Float  | Y-axis rotational angle
+`z`      | Float  | Z-axis rotational angle
+
+```json
+{
+  "x": 2.049999952316284,
+  "y": -0.7599999904632568,
+  "z": 0.550000011920929
+}
 ```
 
 ---------------------------------------
@@ -1652,6 +1753,7 @@ The node-linking was tested with the devices as follows:
   * [Pochiru(eco)](https://ssl.braveridge.com/store/html/products/detail.php?product_id=37)
   * [Tomoru Full Color](https://ssl.braveridge.com/store/html/products/detail.php?product_id=40)
   * [Sizuku Lux](https://ssl.braveridge.com/store/html/products/detail.php?product_id=41)
+  * [Oruto](https://ssl.braveridge.com/store/html/products/detail.php?product_id=44)
 
 * [HOUWA SYSTEM DESIGN K.K.](http://www.houwa-js.co.jp/index.php/en/)
   * [BLEAD-TSH-LK](http://blead.buyshop.jp/items/2858899)
@@ -1661,8 +1763,13 @@ Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/htm
 ---------------------------------------
 ## <a id="Release-Note">Release Note</a>
 
+* v0.4.0 (2019-11-03)
+  * Supported the new device "[Oruto](https://ssl.braveridge.com/store/html/products/detail.php?product_id=44)" (only advertising packet scan).
+  * Added `get()` method on the [`LinkingGyroscope`](#LinkingGyroscope-object), [`LinkingAccelerometer`](#linkingaccelerometer-object), and [`LinkingOrientation`](#linkingorientation-object) objects
+  * Added a timeout mechanism to the process of the [`connect()`](#LinkingDevice-connect-method) method.
+  * Updated [the `buttonId-buttonName` mapping of the pressed button information Service (serviceId: `5`)](#pressed-button-information-service-serviceid-5). Some ID were added, some names were changed (`LongClick` -> `LongPress`, `LongClickRelease` -> `LongPressRelease`).
 * v0.3.0 (2019-10-24)
-  * Supported Node v8 or later versions thanks to [@abandonware/noble](https://github.com/abandonware/noble)
+  * Supported Node v10 or later versions thanks to [@abandonware/noble](https://github.com/abandonware/noble)
   * Updated some deprecated codes related to the [`Buffer`](https://nodejs.org/api/buffer.html). Now, Node v10 or later versions does not complain with this module.
 * v0.2.0 (2018-09-16)
   * Supported illuminance service to monitor the sensor data.
