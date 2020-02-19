@@ -1763,6 +1763,8 @@ Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/htm
 ---------------------------------------
 ## <a id="Release-Note">Release Note</a>
 
+* v0.4.1 (2020-02-19)
+  * Improved the stability of the BLE connection.
 * v0.4.0 (2019-11-03)
   * Supported the new device "[Oruto](https://ssl.braveridge.com/store/html/products/detail.php?product_id=44)" (only advertising packet scan).
   * Added `get()` method on the [`LinkingGyroscope`](#LinkingGyroscope-object), [`LinkingAccelerometer`](#linkingaccelerometer-object), and [`LinkingOrientation`](#linkingorientation-object) objects
@@ -1794,7 +1796,7 @@ Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/htm
 
 The MIT License (MIT)
 
-Copyright (c) 2017-2019 Futomi Hatano
+Copyright (c) 2017-2020 Futomi Hatano
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

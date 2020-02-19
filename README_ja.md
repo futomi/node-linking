@@ -1768,6 +1768,8 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 ---------------------------------------
 ## <a id="Release-Note">リリースノート</a>
 
+* v0.4.1 (2020-02-19)
+  * BLE 接続の安定性を向上しました。
 * v0.4.0 (2019-11-03)
   * 新製品の [Oruto](https://ssl.braveridge.com/store/html/products/detail.php?product_id=44) をサポートしました (アドバタイジングパケットのスキャンのみ)。
   * [`LinkingGyroscope`](#LinkingGyroscope-object), [`LinkingAccelerometer`](#linkingaccelerometer-object), そして [`LinkingOrientation`](#linkingorientation-object) オブジェクトに `get()` メソッドを追加しました。
