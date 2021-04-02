@@ -98,6 +98,10 @@ $ npm install node-linking
   * [start() メソッド](#LinkingPressure-start-method)
   * [`onnotify` プロパティ](#LinkingPressure-onnotify-property)
   * [stop() メソッド](#LinkingPressure-stop-method)
+* [`LinkingHuman` オブジェクト](#LinkingHuman-object)
+  * [start() メソッド](#LinkingHuman-start-method)
+  * [`onnotify` プロパティ](#LinkingHuman-onnotify-property)
+  * [stop() メソッド](#LinkingHuman-stop-method)
 * [`LinkingIlluminance` オブジェクト](#LinkingIlluminance-object)
   * [start() メソッド](#LinkingIlluminance-start-method)
   * [`onnotify` プロパティ](#LinkingIlluminance-onnotify-property)
@@ -1660,6 +1664,73 @@ device.services.pressure.stop().then(() => {
 ```
 
 ---------------------------------------
+## <a id="LinkingHuman-object">`LinkingHuman` オブジェクト</a>
+
+このオブジェクトは、デバイスのモーション (人感) センサーによって報告されるデータを監視する API を提供します。
+
+今のところ、このサービスをサポートしているのは [Oruto](https://store.braveridge.com/products/detail/44) のみです。ただし、Oruto でこのサービスを使うためには事前に BLE ペアリングを必要としますので注意してください。
+
+このサービスの報告頻度は、アドバタイジングデータより低いです。もしより正確な状態を必要とするのであれば、[`startScan()`](#Linking-startScan-method) メソッドを使ってアドバタイジングデータをスキャンすることを推奨します。
+
+### <a id="LinkingHuman-start-method">`start()` メソッド</a>
+
+このメソッドは、デバイスのモーションセンサーによって報告されるデータの監視を開始します。
+
+```JavaScript
+device.services.human.onnotify = (res) => {
+  console.log(JSON.stringify(res, null, '  '));
+};
+
+device.services.human.start().then((res) => {
+  if(res.resultCode === 0) {
+    console.log('Started to watch the data from the motion sensor.');
+  } else {
+    console.error(res.resultCode + ': ' + res.resultText);
+  }
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+`start()` メソッドを呼び出す前に、[`onnotify`](#LinkingHuman-onnotify-property) プロパティにコールバック関数をセットしなければいけません。
+
+このメソッドは `Promise` オブジェクトを返します。デバイスからレスポンスが来たら、`resolve()` 関数が呼び出され、[`LinkingResponse`](#LinkingResponse-object) が引き渡されます。
+
+たとえ、`resolve()` 関数が呼び出されたとしても、必ずしもリクエストが成功したとは限らない点に注意してください。[`LinkingResponse`](#LinkingResponse-object) オブジェクトの `resultCode` の値をチェックすることをお勧めします。
+
+上記コードは、次のような結果を出力します：
+
+```JavaScript
+{
+  "humanDetectionResponse": true,
+  "humanDetectionCount": 1475
+}
+```
+
+上記コードを見て分かる通り、次のプロパティを含んだオブジェクトが `resolve()` 関数に引き渡されます：
+
+プロパティ                 | 型    | 説明
+:------------------------|:--------|:------------
+`humanDetectionResponse` | Boolean | 検知フラグ
+`humanDetectionCount`    | Integer | 検知カウンター (0 - 2047)
+
+### <a id="LinkingHuman-onnotify-property">`onnotify` プロパティ</a>
+
+`start()` メソッドを呼び出した後、デバイスから通知が来るたびに、`onnotify` プロパティにセットされたコールバック関数が呼び出されます。
+
+### <a id="LinkingHuman-stop-method">`stop()` メソッド</a>
+
+このメソッドは、デバイスのモーションセンサーによって報告されるデータの監視を停止します。
+
+```JavaScript
+device.services.human.stop().then(() => {
+  console.log('Stopped');
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+---------------------------------------
 ## <a id="LinkingIlluminance-object">`LinkingIlluminance` オブジェクト</a>
 
 このオブジェクトは、デバイスの照度センサーによって報告されるデータを監視する API を提供します。
@@ -1747,27 +1818,31 @@ device.services.illuminance.stop().then(() => {
 node-linking は次のデバイスで動作することを確認しています：
 
 * [株式会社Braveridge](https://ssl.braveridge.com/)
-  * [Board for apps developers](https://ssl.braveridge.com/store/html/products/detail.php?product_id=26)
-  * [Tomoru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=4)
-  * [Pochiru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=28)
-  * [Sizuku LED](https://ssl.braveridge.com/store/html/products/detail.php?product_id=31)
-  * [Sizuku THA](https://ssl.braveridge.com/store/html/products/detail.php?product_id=32)
-  * [Sizuku 6X](https://ssl.braveridge.com/store/html/products/detail.php?product_id=33)
-  * [Tukeru TH](https://ssl.braveridge.com/store/html/products/detail.php?product_id=34)
-  * [Furueru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=36)
-  * [Pochiru(eco)](https://ssl.braveridge.com/store/html/products/detail.php?product_id=37)
-  * [Tomoru フルカラー](https://ssl.braveridge.com/store/html/products/detail.php?product_id=40)
-  * [Sizuku Lux](https://ssl.braveridge.com/store/html/products/detail.php?product_id=41)
-  * [Oruto](https://ssl.braveridge.com/store/html/products/detail.php?product_id=44)
+  * [Board for apps developers](https://store.braveridge.com/products/detail/26)
+  * [Tomoru](https://store.braveridge.com/products/detail/43)
+  * [Pochiru](https://store.braveridge.com/products/detail/28)
+  * [Sizuku LED](https://store.braveridge.com/products/detail/31)
+  * [Sizuku THA](https://store.braveridge.com/products/detail/32)
+  * [Sizuku 6X](https://store.braveridge.com/products/detail/33)
+  * [Tukeru TH](https://store.braveridge.com/products/detail/34)
+  * [Furueru](https://store.braveridge.com/products/detail/36)
+  * [Pochiru(eco)](https://store.braveridge.com/products/detail/37)
+  * [Tomoru フルカラー](https://store.braveridge.com/products/detail/40)
+  * [Sizuku Lux](https://store.braveridge.com/products/detail/41)
+  * [Oruto](https://store.braveridge.com/products/detail/44)
+  * [Tobasu THI](https://store.braveridge.com/products/detail/45)
 
-* [株式会社芳和システムデザイン](http://www.houwa-js.co.jp/index.php/ja/)
-  * [BLEAD-TSH-LK](http://blead.buyshop.jp/items/2858899)
+* [SEMITEC株式会社](http://www.semitec.co.jp/)
+  * [WT-S2](https://semitec-shop.com/category/select/cid/596/pid/10913/language/ja/currency/JPY)
 
 Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=39) と [Kizuku](https://ssl.braveridge.com/store/html/products/detail.php?product_id=38) も販売していますが、BLE データが非公開の暗号化方式で暗号化されているため、node-linking はこれらのデバイスをサポートしていません。
 
 ---------------------------------------
 ## <a id="Release-Note">リリースノート</a>
 
+* v0.5.0 (2021-04-02)
+  * [`LinkingHuman`](#LinkingHuman-object) オブジェクトを追加しました。
+  * [対応デバイス](#Supported-devices)に [Tobasu THI](https://store.braveridge.com/products/detail/45) と [WT-S2](https://semitec-shop.com/category/select/cid/596/pid/10913/language/ja/currency/JPY) を追加しました。
 * v0.4.1 (2020-02-19)
   * BLE 接続の安定性を向上しました。
 * v0.4.0 (2019-11-03)
@@ -1801,7 +1876,7 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 
 The MIT License (MIT)
 
-Copyright (c) 2017-2019 Futomi Hatano
+Copyright (c) 2017-2021 Futomi Hatano
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

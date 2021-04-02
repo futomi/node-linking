@@ -100,6 +100,10 @@ $ npm install node-linking
   * [start() method](#LinkingPressure-start-method)
   * [`onnotify` property](#LinkingPressure-onnotify-property)
   * [stop() method](#LinkingPressure-stop-method)
+* [`LinkingHuman` object](#LinkingHuman-object)
+  * [start() method](#LinkingHuman-start-method)
+  * [`onnotify` property](#LinkingHuman-onnotify-property)
+  * [stop() method](#LinkingHuman-stop-method)
 * [`LinkingIlluminance` object](#LinkingIlluminance-object)
   * [start() method](#LinkingIlluminance-start-method)
   * [`onnotify` property](#LinkingIlluminance-onnotify-property)
@@ -1657,6 +1661,73 @@ device.services.pressure.stop().then(() => {
 ```
 
 ---------------------------------------
+## <a id="LinkingHuman-object">`LinkingHuman` object</a>
+
+This object exposes APIs which enable you to watch the data reported by the motion (human detection) sensor in the device.
+
+[Oruto](https://store.braveridge.com/products/detail/44) is the only device supporting this service for now. Note that Oruto requires BLE pairing in adavnce for this service.
+
+The report frequency of this service is lower than the advertisement data. If more precise status is required, it is recommended to scan advertisement data using the [`startScan()`](#Linking-startScan-method) method.
+
+### <a id="LinkingHuman-start-method">`start()` method</a>
+
+This method starts to watch the data reported by the motion sensor in the device.
+
+```JavaScript
+device.services.human.onnotify = (res) => {
+  console.log(JSON.stringify(res, null, '  '));
+};
+
+device.services.human.start().then((res) => {
+  if(res.resultCode === 0) {
+    console.log('Started to watch the data from the motion sensor.');
+  } else {
+    console.error(res.resultCode + ': ' + res.resultText);
+  }
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+Before call the `start()` method, a callback function must be set to the [`onnotify`](#LinkingHuman-onnotify-property) property.
+
+This method returns a `Promise` object. If a response comes from the device, the `resolve()` function will be called with the [`LinkingResponse`](#LinkingResponse-object) object.
+
+Note that the request is not necessarily accepted even if the `resolve()` method is called. It is recommended to check the value of the `resultCode` property in the [`LinkingResponse`](#LinkingResponse-object) object.
+
+The code snippet above will output the result like this:
+
+```JavaScript
+{
+  "humanDetectionResponse": true,
+  "humanDetectionCount": 1475
+}
+```
+
+As you can see in the code snippet above, an object is passed to the `resolve()` function, which contains the properties as follows:
+
+Property                 | Type    | Description
+:------------------------|:--------|:------------
+`humanDetectionResponse` | Boolean | Detection flag
+`humanDetectionCount`    | Integer | Counter of detection (0 - 2047)
+
+### <a id="LinkingHuman-onnotify-property">`onnotify` property</a>
+
+After the `start()` method is called, the callback function set to the `onnotify` property will be called whenever a notification comes from the devices.
+
+### <a id="LinkingHuman-stop-method">`stop()` method</a>
+
+This method stops to watch the data reported by the motion sensor in the device.
+
+```JavaScript
+device.services.human.stop().then(() => {
+  console.log('Stopped');
+}).catch((error) => {
+  console.error(error);
+});
+```
+
+---------------------------------------
 ## <a id="LinkingIlluminance-object">`LinkingIlluminance` object</a>
 
 This object exposes APIs which enable you to watch the data reported by the illuminance sensor in the device.
@@ -1742,27 +1813,31 @@ The possible combinations of `resultCode` and `resultText` are described below:
 The node-linking was tested with the devices as follows:
 
 * [Braveridge Co., Ltd.](https://ssl.braveridge.com/)
-  * [Board for apps developers](https://ssl.braveridge.com/store/html/products/detail.php?product_id=26)
-  * [Tomoru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=4)
-  * [Pochiru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=28)
-  * [Sizuku LED](https://ssl.braveridge.com/store/html/products/detail.php?product_id=31)
-  * [Sizuku THA](https://ssl.braveridge.com/store/html/products/detail.php?product_id=32)
-  * [Sizuku 6X](https://ssl.braveridge.com/store/html/products/detail.php?product_id=33)
-  * [Tukeru TH](https://ssl.braveridge.com/store/html/products/detail.php?product_id=34)
-  * [Furueru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=36)
-  * [Pochiru(eco)](https://ssl.braveridge.com/store/html/products/detail.php?product_id=37)
-  * [Tomoru Full Color](https://ssl.braveridge.com/store/html/products/detail.php?product_id=40)
-  * [Sizuku Lux](https://ssl.braveridge.com/store/html/products/detail.php?product_id=41)
-  * [Oruto](https://ssl.braveridge.com/store/html/products/detail.php?product_id=44)
+  * [Board for apps developers](https://store.braveridge.com/products/detail/26)
+  * [Tomoru](https://store.braveridge.com/products/detail/43)
+  * [Pochiru](https://store.braveridge.com/products/detail/28)
+  * [Sizuku LED](https://store.braveridge.com/products/detail/31)
+  * [Sizuku THA](https://store.braveridge.com/products/detail/32)
+  * [Sizuku 6X](https://store.braveridge.com/products/detail/33)
+  * [Tukeru TH](https://store.braveridge.com/products/detail/34)
+  * [Furueru](https://store.braveridge.com/products/detail/36)
+  * [Pochiru(eco)](https://store.braveridge.com/products/detail/37)
+  * [Tomoru Full Color](https://store.braveridge.com/products/detail/40)
+  * [Sizuku Lux](https://store.braveridge.com/products/detail/41)
+  * [Oruto](https://store.braveridge.com/products/detail/44)
+  * [Tobasu THI](https://store.braveridge.com/products/detail/45)
 
-* [HOUWA SYSTEM DESIGN K.K.](http://www.houwa-js.co.jp/index.php/en/)
-  * [BLEAD-TSH-LK](http://blead.buyshop.jp/items/2858899)
+* [SEMITEC Corporation](http://www.semitec.co.jp/english/)
+  * [WT-S2](https://semitec-shop.com/category/select/cid/596/pid/10913/language/en/currency/USD)
 
 Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/html/products/detail.php?product_id=39) and [Kizuku](https://ssl.braveridge.com/store/html/products/detail.php?product_id=38), the node-linking does not support these devices because the BLE data is encrypted using an unpublicized encryption method.
 
 ---------------------------------------
 ## <a id="Release-Note">Release Note</a>
 
+* v0.5.0 (2021-04-02)
+  * Added the [`LinkingHuman`](#LinkingHuman-object) object.
+  * Added [Tobasu THI](https://store.braveridge.com/products/detail/45) and [WT-S2](https://semitec-shop.com/category/select/cid/596/pid/10913/language/en/currency/USD) to the [supported device list](#Supported-devices).
 * v0.4.1 (2020-02-19)
   * Improved the stability of the BLE connection.
 * v0.4.0 (2019-11-03)
@@ -1796,7 +1871,7 @@ Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/htm
 
 The MIT License (MIT)
 
-Copyright (c) 2017-2020 Futomi Hatano
+Copyright (c) 2017-2021 Futomi Hatano
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
