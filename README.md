@@ -15,7 +15,7 @@ The node-linking works on Linux-based OSes, such as Raspbian, Ubuntu, and so on.
 
 ## Dependencies
 
-* [Node.js](https://nodejs.org/en/) 6 +
+* [Node.js](https://nodejs.org/en/) 12 +
 * [@abandonware/noble](https://github.com/abandonware/noble)
 
 See the document of the [@abandonware/noble](https://github.com/abandonware/noble) for details on installing the [@abandonware/noble](https://github.com/abandonware/noble).
@@ -47,6 +47,7 @@ $ npm install node-linking
   * [scartScan(*[params]*) method](#Linking-startScan-method)
   * [stopScan() method](#Linking-stopScan-method)
   * [`onadvertisement` event handler](#Linking-onadvertisement-event-handler)
+  * [`wait()` method](#Linking-wait-method)
 * [`LinkingDevice` object](#LinkingDevice-object)
   * [connect() method](#LinkingDevice-connect-method)
   * [disconnect() method](#LinkingDevice-disconnect-method)
@@ -126,46 +127,47 @@ const Linking = require('node-linking');
 // Create a `Linking` object
 const linking = new Linking();
 
-// `LinkingDevice` object
-let device = null;
+(async () => {
+  // Initialize the `LinkingDevice` object
+  await linking.init();
 
-// Initialize the `LinkingDevice` object
-linking.init().then(() => {
   // Discover devices whose name starts with `Tukeru` for 5 seconds
-  return linking.discover({
+  let device_list = await linking.discover({
     duration: 5000,
     nameFilter: 'Tukeru'
   });
-}).then((device_list) => {
-  if(device_list.length > 0) {
-    // `LinkingDevice` object representing the found device
-    device = device_list[0];
-    // The name of the device
-    let name = device.advertisement.localName;
-    console.log('`' + name + '` was found.');
-    // Connect to the device
-    console.log('Connecting to `' + name + '`...');
-    return device.connect();
-  } else {
-    throw new Error('No device was found.');
+
+  if (device_list.length === 0) {
+    console.log('No device was found.');
+    return;
   }
-}).then(() => {
+
+  // `LinkingDevice` object representing the found device
+  let device = device_list[0];
+
+  // The name of the device
+  let name = device.advertisement.localName;
+  console.log('`' + name + '` was found.');
+
+  // Connect to the device
+  console.log('Connecting to `' + name + '`...');
+  await device.connect();
   console.log('Connected.');
+
+  // Show the supported services
   console.log('This device suports:');
-  for(let service_name in device.services) {
-    if(device.services[service_name]) {
-      console.log('- ' + service_name);
+  for (let [name, service] of Object.entries(device.services)) {
+    if (service) {
+      console.log('- ' + name);
     }
   }
+
   // Disconnect the device
   console.log('Disconnecting...');
-  return device.disconnect();
-}).then(() => {
+  await device.disconnect();
   console.log('Disconnected');
-}).catch((error) => {
-  console.log('[ERROR] ' + error.message);
-  console.error(error);
-});
+  process.exit();
+})();
 ```
 
 First of all, you have to create a [`Linking`](#Linking-object) object from the `Linking` constructor object. In the code above, the variable `linking` is the [`Linking`](#Linking-object) object.
@@ -202,16 +204,46 @@ Finally, you can disconnect the device using [`disconnect()`](#LinkingDevice-dis
 
 ### <a id="Quick-Start-2">Watching button actions</a>
 
-Some Linking devices such as "Pochiru" equip a button. The Linking Profile supports to notify button actions on such devices. The code snippet blow shows how to watch the button actions.
+Some Linking devices such as "Pochiru" have a button. The Linking Profile supports to notify button actions on such devices. The code snippet blow shows how to watch the button actions.
 
 ```JavaScript
-// Check if the device supports the button service
-if(device.services.button) {
-  // Set a function called whenever a notification comes from the device
-  device.services.button.onnotify = (res) => {
-    console.log(JSON.stringify(res, null, '  '));
-  };
-}
+const Linking = require('node-linking');
+const linking = new Linking();
+
+(async () => {
+  await linking.init();
+  let device_list = await linking.discover({
+    duration: 5000,
+    nameFilter: 'Pochiru'
+  });
+  if (device_list.length === 0) {
+    console.log('No device was found.');
+    return;
+  }
+
+  let device = device_list[0];
+  let name = device.advertisement.localName;
+  console.log('`' + name + '` was found:');
+
+  console.log('Connecting to `' + name + '`...');
+  await device.connect();
+  console.log('Connected.');
+
+  // Check if the device supports the button service
+  if (device.services.button) {
+    // Set a function called whenever a notification comes from the device
+    device.services.button.onnotify = (res) => {
+      console.log(JSON.stringify(res, null, '  '));
+    };
+    console.log('Now listening to the button event.');
+    await linking.wait(30000);
+  }
+
+  await device.disconnect();
+  console.log('Disconnected');
+
+  process.exit();
+})();
 ```
 
 If you want to watch button actions, it is recommended to check the `LinkingDeivce.services.button` property. If the device supports the button service, a [`LinkingButton`](#LinkingButton-object) object is set to it, which exposes APIs for the button action on the device. If the device does not support the button service, `null` is set to it.
@@ -248,31 +280,54 @@ This sample code shows how to start sensor notifications and monitor sensor data
 Note that the code snippet blow works after connecting to the device.
 
 ```JavaScript
-// Check if the device supports the temperature service
-if(device.services.temperature) {
-  // Set a function called whenever a notification comes from the device
-  device.services.temperature.onnotify = (res) => {
-    console.log(res.temperature + ' °C');
-  };
-  // Start notifications
-  console.log('Starting to listen to notifications.');
-  device.services.temperature.start().then((res) => {
-    console.log('Now listening to notifications.');
-  });
+const Linking = require('node-linking');
+const linking = new Linking();
 
-  // Stop notification in 10 seconds
-  setTimeout(() => {
-    device.services.temperature.stop().then((res) => {;
-      console.log('Stopped to listen to notifications.');
-      // Disconnect the device
-      return device.disconnect();
-    }).then(() => {
-      console.log('Disconnected');
-    }).catch((error) => {
-      throw new Error('Failed to stop notifications');
-    });
-  }, 10000);
-}
+(async () => {
+  await linking.init();
+  let device_list = await linking.discover({
+    duration: 5000,
+    nameFilter: 'Tukeru'
+  });
+  if (device_list.length === 0) {
+    console.log('No device was found.');
+    return;
+  }
+
+  let device = device_list[0];
+  let name = device.advertisement.localName;
+  console.log('`' + name + '` was found:');
+
+  console.log('Connecting to `' + name + '`...');
+  await device.connect();
+  console.log('Connected.');
+  console.log('------------------------------------------------');
+
+  // Check if the device supports the temperature service
+  if (device.services.temperature) {
+    // Set a function called when a response comes from the device
+    device.services.temperature.onnotify = (res) => {
+      console.log(res.temperature + ' °C');
+    };
+
+    // Start notifications
+    console.log('Starting to listen to notifications.');
+    await device.services.temperature.start();
+    console.log('Now listening to notifications.');
+
+    // Wait for 10 seconds
+    await linking.wait(10000);
+
+    // Stop notification
+    await device.services.temperature.stop();
+    console.log('Stopped to listen to notifications.');
+  }
+
+  await device.disconnect();
+  console.log('Disconnected');
+
+  process.exit();
+})();
 ```
 
 If you want to watch temperature sensor data, it is recommended to check the `LinkingDeivce.services.temperature` property. If the device supports the temperature service, a [`LinkingTemperature`](#LinkingTemperature-object) object is set to it, which exposes APIs for the temperature sensor in the device. If the device does not support the temperature service, `null` is set to it.
@@ -298,35 +353,58 @@ Disconnected
 A LED is equipped in most of Linking devices. The Linking Profile supports turning on/off a LED on a device. The code blow shows how to turn on and off a LED with a color and a pattern.
 
 ```JavaScript
-// Check if the device supports the LED service
-if(device.services.led) {
-  // Show the supported colors
-  console.log('- Supported colors:');
-  Object.keys(device.services.led.colors).forEach((color) => {
-    console.log('  - ' + color);
-  });
+const Linking = require('node-linking');
+const linking = new Linking();
 
-  // Show the supported patterns
-  console.log('- Supported patterns:');
-  Object.keys(device.services.led.patterns).forEach((pattern) => {
-    console.log('  - ' + pattern);
+(async () => {
+  await linking.init();
+  let device_list = await linking.discover({
+    duration: 5000,
+    nameFilter: 'Tukeru'
   });
+  if (device_list.length === 0) {
+    console.log('No device was found.');
+    return;
+  }
+  let device = device_list[0];
+  let name = device.advertisement.localName;
+  console.log('`' + name + '` was found:');
 
-  // Turn on the LED
-  device.services.led.turnOn('Red', 'Pattern1').then((res) => {
+  console.log('Connecting to `' + name + '`...');
+  await device.connect();
+  console.log('Connected.');
+
+  // Check if the device supports the LED service
+  if (device.services.led) {
+    // Show the supported colors
+    console.log('- Supported colors:');
+    Object.keys(device.services.led.colors).forEach((color) => {
+      console.log('  - ' + color);
+    });
+
+    // Show the supported patterns
+    console.log('- Supported patterns:');
+    Object.keys(device.services.led.patterns).forEach((pattern) => {
+      console.log('  - ' + pattern);
+    });
+
+    // Turn on the LED
+    await device.services.led.turnOn('Red', 'Pattern1');
     console.log('The LED was turned on');
-    // Turn off the LED in 5 seconds
-    setTimeout(() => {
-      device.services.led.turnOff().then(() => {
-        console.log('The LED was turned off');
-      }).catch((error) => {
-        throw error;
-      });
-    }, 5000);
-  }).catch((error) => {
-    throw error;
-  });
-}
+
+    // Wait for 5 seconds
+    await linking.wait(5000);
+
+    // Turn off the LED
+    await device.services.led.turnOff();
+    console.log('The LED was turned off');
+  }
+
+  await device.disconnect();
+  console.log('Disconnected');
+
+  process.exit();
+})();
 ```
 
 If you want to turn on/off a LED, it is recommended to check the `LinkingDeivce.services.led` property. If the device supports the LED service, the value will be a [`LinkingLed`](#LinkingLed-object) object exposing APIs for the LED on the device. Otherwise, it is set to `null'.
@@ -491,7 +569,7 @@ The discovery process was finished.
 
 ### <a id="Linking-startScan-method">scartScan(*[params]*) method</a>
 
-The `startScan()` method starts to scan advertising packets from Linking devices. This method takes an argument which is a hash object containing parameters as follow:
+The `startScan()` method starts to scan advertising packets from Linking devices. This method returns a `Promise` object. This method takes an argument which is a hash object containing parameters as follow:
 
 Property     | Type   | Required | Description
 :------------|:-------|:---------|:------------
@@ -501,21 +579,29 @@ Property     | Type   | Required | Description
 Whenever a packet is received, the callback function set to the [`onadvertisement`](#Linking-onadvertisement-event-handler) property of the `Linking` object will be called. When a packet is received, an [`LinkingAdvertisement`](#LinkingAdvertisement-object) object will be passed to the callback function.
 
 ```JavaScript
-// Set a callback function called when a packet is received
-linking.onadvertisement = (ad) => {
-  console.log(JSON.stringify(ad, null, '  '));
-};
+const Linking = require('node-linking');
+const linking = new Linking();
 
-// Start to scan advertising packets from Linking devices
-linking.startScan({
-  nameFilter: 'Tukeru'
-});
+(async () => {
+  await linking.init();
 
-// Stop to scan in 30 seconds
-setTimeout(() => {
-  linking.stopScan();
+  // Set a callback function called when a packet is received
+  linking.onadvertisement = (ad) => {
+    console.log(JSON.stringify(ad, null, '  '));
+  };
+
+  // Start to scan advertising packets from Linking devices
+  await linking.startScan({
+    nameFilter: 'Tukeru'
+  });
+
+  // Wait for 10 seconds
+  await linking.wait(10000);
+
+  // Stop to scan
+  await linking.stopScan();
   process.exit();
-}, 30000);
+})();
 ```
 
 The code snippet above will output the result as follows:
@@ -565,13 +651,19 @@ The code snippet above will output the result as follows:
 
 ### <a id="Linking-stopScan-method">stopScan() method</a>
 
-The `stopScan()` method stops to scan advertising packets from Linking devices. See the section "[`startScan()` method](#Linking-startScan-method)" for details.
+The `stopScan()` method stops to scan advertising packets from Linking devices. This method returns a `Promise` object. See the section "[`startScan()` method](#Linking-startScan-method)" for details.
 
 ### <a id="Linking-onadvertisement-event-handler">`onadvertisement` event handler</a>
 
 If a callback function is set to the `onadvertisement` property, the callback function will be called whenever an advertising packet is received from a Linking device during the scan is active (from the moment when the `startScan()` method is called, to the moment when the `stopScan()` method is called).
 
 See the section "[`startScan()` method](#Linking-startScan-method)" for details.
+
+### <a id="Linking-wait-method">`wait()` method</a>
+
+The `wait()` method waits for the specified milliseconds. This method takes an integer representing the duration (millisecond). This method returns a `Promise` object.
+
+This method has nothing to do with Linking devices. It's just an utility method. See the section "[Quick Start](#Quick-Start)" for details of the usage of this method.
 
 ---------------------------------------
 ## <a id="LinkingDevice-object">`LinkingDevice` object</a>
@@ -1835,6 +1927,11 @@ Though Braveridge is also selling [Oshieru](https://ssl.braveridge.com/store/htm
 ---------------------------------------
 ## <a id="Release-Note">Release Note</a>
 
+* v1.0.0 (2021-04-13)
+  * Whole of this module was refactored with modern JS syntax such as `async`, `await`, etc.
+  * The [`scartScan()`](#Linking-startScan-method) and the [`stopScan()`](#Linking-stopScan-method) now return a `Promise` object.
+  * The [`wait()`](#Linking-wait-method) method was newly added.
+  * The stability of the [`connect()`](#LinkingDevice-connect-method) method was improved.
 * v0.5.0 (2021-04-02)
   * Added the [`LinkingHuman`](#LinkingHuman-object) object.
   * Added [Tobasu THI](https://store.braveridge.com/products/detail/45) and [WT-S2](https://semitec-shop.com/category/select/cid/596/pid/10913/language/en/currency/USD) to the [supported device list](#Supported-devices).

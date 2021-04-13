@@ -1,6 +1,8 @@
 node-linking
 ===============
 
+[[English (英語)](README.md)]
+
 node-linking は、Linking Project (NTTドコモ) によって開発された Linking プロファイルをサポートした BLE デバイスにアクセスするための Node.js モジュールです。
 
 [Linking プロファイル](https://linkingiot.com/developer/api.html)とは、LED、ボタン、センサーなどの IoT デバイスに使われる BLE プロファイルです。すでに日本国内ではいくつかの [Linking デバイス](https://linkingiot.com/developer/devices.html)が販売されています。
@@ -13,7 +15,7 @@ node-linking は、Raspbian や Ubuntu など Linux ベースの OS で動作し
 
 ## 依存関係
 
-* [Node.js](https://nodejs.org/en/) 6 +
+* [Node.js](https://nodejs.org/en/) 12s +
 * [@abandonware/noble](https://github.com/abandonware/noble)
 
 [@abandonware/noble](https://github.com/abandonware/noble) のインストール方法については、[@abandonware/noble](https://github.com/abandonware/noble) のドキュメントを参照してください。
@@ -45,6 +47,7 @@ $ npm install node-linking
   * [scartScan(*[params]*) メソッド](#Linking-startScan-method)
   * [stopScan() メソッド](#Linking-stopScan-method)
   * [`onadvertisement` イベントハンドラ](#Linking-onadvertisement-event-handler)
+  * [`wait()` method](#Linking-wait-method)
 * [`LinkingDevice` オブジェクト](#LinkingDevice-object)
   * [connect() メソッド](#LinkingDevice-connect-method)
   * [disconnect() メソッド](#LinkingDevice-disconnect-method)
@@ -124,46 +127,47 @@ const Linking = require('node-linking');
 // `Linking` オブジェクトを生成
 const linking = new Linking();
 
-// `LinkingDevice` オブジェクト
-let device = null;
+(async () => {
+  // `LinkingDevice` オブジェクトを初期化
+  await linking.init();
 
-// `LinkingDevice` オブジェクトを初期化
-linking.init().then(() => {
   // 名前が `Tukeru` で始まるデバイスを 5 秒間発見を試みる
-  return linking.discover({
+  let device_list = await linking.discover({
     duration: 5000,
     nameFilter: 'Tukeru'
   });
-}).then((device_list) => {
-  if(device_list.length > 0) {
-    // 発見したデバイスを表す `LinkingDevice` オブジェクト
-    device = device_list[0];
-    // デバイス名
-    let name = device.advertisement.localName;
-    console.log('`' + name + '` was found.');
-    // デバイスに接続
-    console.log('Connecting to `' + name + '`...');
-    return device.connect();
-  } else {
-    throw new Error('No device was found.');
+
+  if (device_list.length === 0) {
+    console.log('No device was found.');
+    return;
   }
-}).then(() => {
+
+  // 発見したデバイスを表す `LinkingDevice` オブジェクト
+  let device = device_list[0];
+
+  // デバイス名
+  let name = device.advertisement.localName;
+  console.log('`' + name + '` was found.');
+
+  // デバイスに接続
+  console.log('Connecting to `' + name + '`...');
+  await device.connect();
   console.log('Connected.');
+
+  // 対応サービスを表示
   console.log('This device suports:');
-  for(let service_name in device.services) {
-    if(device.services[service_name]) {
-      console.log('- ' + service_name);
+  for (let [name, service] of Object.entries(device.services)) {
+    if (service) {
+      console.log('- ' + name);
     }
   }
+
   // デバイスを切断
   console.log('Disconnecting...');
-  return device.disconnect();
-}).then(() => {
+  await device.disconnect();
   console.log('Disconnected');
-}).catch((error) => {
-  console.log('[ERROR] ' + error.message);
-  console.error(error);
-});
+  process.exit();
+})();
 ```
 
 まず、`Linking` コンストラクタオブジェクトから [`Linking`](#Linking-object) オブジェクトを生成しなければいけません。上記コードでは、変数 `linking` が [`Linking`](#Linking-object) オブジェクトに相当します。
@@ -203,13 +207,43 @@ Disconnected
 "Pochiru" のように、いくつかの Linking デバイスにはボタンが組み込まれています。そういったデバイスのために、Linking プロファイルはボタンアクションの通知をサポートしています。以下のコードは、ボタンアクションの検知の方法を示しています。
 
 ```JavaScript
-// button サービスをサポートしているかをチェック
-if(device.services.button) {
-  // デバイスから通知が送られてくるたびに呼び出される関数をセット
-  device.services.button.onnotify = (res) => {
-    console.log(JSON.stringify(res, null, '  '));
-  };
-}
+const Linking = require('node-linking');
+const linking = new Linking();
+
+(async () => {
+  await linking.init();
+  let device_list = await linking.discover({
+    duration: 5000,
+    nameFilter: 'Pochiru'
+  });
+  if (device_list.length === 0) {
+    console.log('No device was found.');
+    return;
+  }
+
+  let device = device_list[0];
+  let name = device.advertisement.localName;
+  console.log('`' + name + '` was found:');
+
+  console.log('Connecting to `' + name + '`...');
+  await device.connect();
+  console.log('Connected.');
+
+  // button サービスをサポートしているかをチェック
+  if (device.services.button) {
+    // デバイスから通知が送られてくるたびに呼び出される関数をセット
+    device.services.button.onnotify = (res) => {
+      console.log(JSON.stringify(res, null, '  '));
+    };
+    console.log('Now listening to the button event.');
+    await linking.wait(30000);
+  }
+
+  await device.disconnect();
+  console.log('Disconnected');
+
+  process.exit();
+})();
 ```
 
 もしボタンアクションを監視したいなら、`LinkingDeivce.services.button` プロパティをチェックすることをお勧めします。もしデバイスが button サービスをサポートしているなら、そこに [`LinkingButton`](#LinkingButton-object) オブジェクトがセットされます。そのオブジェクトには、デバイスのボタンアクションのための API が用意されています。もしデバイスが button サービスをサポートしていないなら、`null` がセットされます。
@@ -246,31 +280,54 @@ Linking プロファイルは、様々なボタンアクションをサポート
 以下のコードはデバイス接続後でないと動作しない点に注意してください。
 
 ```JavaScript
-// デバイスが temperature サービスをサポートしているかをチェック
-if(device.services.temperature) {
-  // デバイスから通知が来るたびに呼び出される関数をセット
-  device.services.temperature.onnotify = (res) => {
-    console.log(res.temperature + ' °C');
-  };
-  // 通知を開始
-  console.log('Starting to listen to notifications.');
-  device.services.temperature.start().then((res) => {
-    console.log('Now listening to notifications.');
-  });
+const Linking = require('node-linking');
+const linking = new Linking();
 
-  // 10 秒後に通知を停止
-  setTimeout(() => {
-    device.services.temperature.stop().then((res) => {;
-      console.log('Stopped to listen to notifications.');
-      // デバイスを切断
-      return device.disconnect();
-    }).then(() => {
-      console.log('Disconnected');
-    }).catch((error) => {
-      throw new Error('Failed to stop notifications');
-    });
-  }, 10000);
-}
+(async () => {
+  await linking.init();
+  let device_list = await linking.discover({
+    duration: 5000,
+    nameFilter: 'Tukeru'
+  });
+  if (device_list.length === 0) {
+    console.log('No device was found.');
+    return;
+  }
+
+  let device = device_list[0];
+  let name = device.advertisement.localName;
+  console.log('`' + name + '` was found:');
+
+  console.log('Connecting to `' + name + '`...');
+  await device.connect();
+  console.log('Connected.');
+  console.log('------------------------------------------------');
+
+  // デバイスが temperature サービスをサポートしているかをチェック
+  if (device.services.temperature) {
+    // デバイスから通知が来たら呼び出される関数をセット
+    device.services.temperature.onnotify = (res) => {
+      console.log(res.temperature + ' °C');
+    };
+
+    // 通知を開始
+    console.log('Starting to listen to notifications.');
+    await device.services.temperature.start();
+    console.log('Now listening to notifications.');
+
+    // 10 秒待つ
+    await linking.wait(10000);
+
+    // 通知を停止
+    await device.services.temperature.stop();
+    console.log('Stopped to listen to notifications.');
+  }
+
+  await device.disconnect();
+  console.log('Disconnected');
+
+  process.exit();
+})();
 ```
 
 もし温度センサーのデータを監視したいなら、`LinkingDeivce.services.temperature` プロパティをチェックすることをお勧めします。もしデバイスが temperature サービスをサポートしているなら、そこに [`LinkingTemperature`](#LinkingTemperature-object) オブジェクトがセットされます。そのオブジェクトには、デバイスの温度センサーに関する API が用意されています。もしデバイスが temperature サービスをサポートしていないなら、`null` がセットされます。
@@ -296,35 +353,58 @@ Disconnected
 ほとんどの Linking デバイスには LED が装備されています。Linking プロファイルはデバイスの LED の ON/OFF をサポートしています。下記コードは、色とパターンを使って LED の点灯や消灯の方法を示しています。
 
 ```JavaScript
-// デバイスが LED サービスをサポートしているかをチェック
-if(device.services.led) {
-  // サポートされている色を表示
-  console.log('- Supported colors:');
-  Object.keys(device.services.led.colors).forEach((color) => {
-    console.log('  - ' + color);
-  });
+const Linking = require('node-linking');
+const linking = new Linking();
 
-  // サポートされているパターンを表示
-  console.log('- Supported patterns:');
-  Object.keys(device.services.led.patterns).forEach((pattern) => {
-    console.log('  - ' + pattern);
+(async () => {
+  await linking.init();
+  let device_list = await linking.discover({
+    duration: 5000,
+    nameFilter: 'Tukeru'
   });
+  if (device_list.length === 0) {
+    console.log('No device was found.');
+    return;
+  }
+  let device = device_list[0];
+  let name = device.advertisement.localName;
+  console.log('`' + name + '` was found:');
 
-  // LED 点灯
-  device.services.led.turnOn('Red', 'Pattern1').then((res) => {
+  console.log('Connecting to `' + name + '`...');
+  await device.connect();
+  console.log('Connected.');
+
+  // デバイスが LED サービスをサポートしているかをチェック
+  if (device.services.led) {
+    // サポートされている色を表示
+    console.log('- Supported colors:');
+    Object.keys(device.services.led.colors).forEach((color) => {
+      console.log('  - ' + color);
+    });
+
+    // サポートされているパターンを表示
+    console.log('- Supported patterns:');
+    Object.keys(device.services.led.patterns).forEach((pattern) => {
+      console.log('  - ' + pattern);
+    });
+
+    // LED 点灯
+    await device.services.led.turnOn('Red', 'Pattern1');
     console.log('The LED was turned on');
-    // 5 秒後に LED を消灯
-    setTimeout(() => {
-      device.services.led.turnOff().then(() => {
-        console.log('The LED was turned off');
-      }).catch((error) => {
-        throw error;
-      });
-    }, 5000);
-  }).catch((error) => {
-    throw error;
-  });
-}
+
+    // 5秒待つ
+    await linking.wait(5000);
+
+    // LED 消灯
+    await device.services.led.turnOff();
+    console.log('The LED was turned off');
+  }
+
+  await device.disconnect();
+  console.log('Disconnected');
+
+  process.exit();
+})();
 ```
 
 LED を点灯または消灯したい場合は、`LinkingDeivce.services.led` プロパティをチェックすることをお勧めします。もしデバイスが LED サービスをサポートしていれば、この値には [`LinkingLed`](#LinkingLed-object) オブジェクトがセットされます。そのオブジェクトには、デバイスの LED に関する API が用意されています。LED サービスがサポートされていなければ、`null` がセットされます。
@@ -489,7 +569,7 @@ The discovery process was finished.
 
 ### <a id="Linking-startScan-method">scartScan(*[params]*) メソッド</a>
 
-`startScan()` メソッドは、Linking デバイスからのアドバタイジングパケットのスキャンを開始します。このメソッドは、次のパラメータを含んだハッシュオブジェクトを引数に取ります：
+`startScan()` メソッドは、Linking デバイスからのアドバタイジングパケットのスキャンを開始します。このメソッドは `Promise` オブジェクトを返します。このメソッドは、次のパラメータを含んだハッシュオブジェクトを引数に取ります：
 
 プロパティ    | 型     | 必須 | 説明
 :------------|:-------|:-----|:------------
@@ -499,21 +579,29 @@ The discovery process was finished.
 パケットを受信するたびに、`Linking` オブジェクトの [`onadvertisement`](#Linking-onadvertisement-event-handler) プロパティにセットされたコールバック関数が呼び出されます。パケットを受信すると、そのコールバック関数に [`LinkingAdvertisement`](#LinkingAdvertisement-object) が引き渡されます。
 
 ```JavaScript
-// パケット受信時に呼び出されるコールバック関数をセット
-linking.onadvertisement = (ad) => {
-  console.log(JSON.stringify(ad, null, '  '));
-};
+const Linking = require('node-linking');
+const linking = new Linking();
 
-// Linking デバイスからのアドバタイジングパケットのスキャンを開始
-linking.startScan({
-  nameFilter: 'Tukeru'
-});
+(async () => {
+  await linking.init();
 
-// 30 秒でスキャンを停止
-setTimeout(() => {
-  linking.stopScan();
+  // パケット受信時に呼び出されるコールバック関数をセット
+  linking.onadvertisement = (ad) => {
+    console.log(JSON.stringify(ad, null, '  '));
+  };
+
+  // Linking デバイスからのアドバタイジングパケットのスキャンを開始
+  await linking.startScan({
+    nameFilter: 'Tukeru'
+  });
+
+  // 10 秒待つ
+  await linking.wait(10000);
+
+  // スキャンを停止
+  await linking.stopScan();
   process.exit();
-}, 30000);
+})();
 ```
 
 上記のコードは、次のような結果を出力します：
@@ -563,13 +651,19 @@ setTimeout(() => {
 
 ### <a id="Linking-stopScan-method">stopScan() メソッド</a>
 
-`stopScan()` メソッドは、Linking デバイスからのアドバタイジングパケットのスキャンを停止します。詳細は "[`startScan()` メソッド](#Linking-startScan-method)" の章をご覧ください。
+`stopScan()` メソッドは、Linking デバイスからのアドバタイジングパケットのスキャンを停止します。このメソッドは `Promise` オブジェクトを返します。詳細は "[`startScan()` メソッド](#Linking-startScan-method)" の章をご覧ください。
 
 ### <a id="Linking-onadvertisement-event-handler">`onadvertisement` イベントハンドラ</a>
 
 `onadvertisement` にコールバック関数がセットされると、スキャンがアクティブな間 (`startScan()` メソッドが呼び出された時点から、`stopScan()` メソッドが呼び出される時点までの間)、Linking デバイスからアドバタイジングパケットを受信するたびに、そのコールバック関数が呼び出されます。
 
 詳細は "[`startScan()` メソッド](#Linking-startScan-method)" の章をご覧ください。
+
+### <a id="Linking-wait-method">`wait()` method</a>
+
+`wait()` メソッドは指定のミリ秒間だけ待ちます。このメソッドは待ち時間を表す整数 (ミリ秒) を引数に取ります。このメソッドは `Promise` オブジェクトを返します。
+
+このメソッドはリンキングデバイスに対して何もしません。これは単なるユーティリティメソッドです。このメソッドの使い方の詳細は "[Quick Start](#Quick-Start)" のセクションをご覧ください。
 
 ---------------------------------------
 ## <a id="LinkingDevice-object">`LinkingDevice` オブジェクト</a>
@@ -1839,7 +1933,11 @@ Braveridge 社が [Oshieru](https://ssl.braveridge.com/store/html/products/detai
 
 ---------------------------------------
 ## <a id="Release-Note">リリースノート</a>
-
+* v1.0.0 (2021-04-13)
+  * このモジュール全体を `async`, `await` 等のモダンな構文で書き直しました。
+  * [`scartScan()`](#Linking-startScan-method) と [`stopScan()`](#Linking-stopScan-method) は `Promise` オブジェクトを返すようになりました。
+  * [`wait()`](#Linking-wait-method) メソッドを新たに追加しました。
+  * [`connect()`](#LinkingDevice-connect-method) メソッドのデバイス接続の安定化を図りました。
 * v0.5.0 (2021-04-02)
   * [`LinkingHuman`](#LinkingHuman-object) オブジェクトを追加しました。
   * [対応デバイス](#Supported-devices)に [Tobasu THI](https://store.braveridge.com/products/detail/45) と [WT-S2](https://semitec-shop.com/category/select/cid/596/pid/10913/language/ja/currency/JPY) を追加しました。
